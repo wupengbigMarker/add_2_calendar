@@ -23,12 +23,13 @@ public class Add2CalendarPlugin: NSObject, FlutterPlugin {
         let args = call.arguments as! [String:Any]
        
           
-        addEventToCalendar(from: args,completion:{ (success) -> Void in
-              if success {
-                  result(true)
-              } else {
-                  result(false)
-              }
+        addEventToCalendar(from: args,completion:{ (eventId) -> Void in
+            //   if success {
+            //       result(true)
+            //   } else {
+            //       result(false)
+            //   }
+            result(eventId)
           })
       } else if call.method == "deleteCalendarEvent" {
           guard let eventId = call.arguments as? String else {

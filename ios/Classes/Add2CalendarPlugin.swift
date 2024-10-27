@@ -108,16 +108,18 @@ public class Add2CalendarPlugin: NSObject, FlutterPlugin {
         if #available(iOS 17, *) {
             OperationQueue.main.addOperation {
                 self.presentEventCalendarDetailModal(event: event, eventStore: eventStore)
+                completion?(event.eventIdentifier)
             }
-            completion?(event.eventIdentifier)
+            // completion?(event.eventIdentifier)
         } else {
             let authStatus = getAuthorizationStatus()
             switch authStatus {
             case .authorized:
                 OperationQueue.main.addOperation {
                     self.presentEventCalendarDetailModal(event: event, eventStore: eventStore)
+                    completion?(event.eventIdentifier)
+
                 }
-                completion?(event.eventIdentifier)
             case .notDetermined:
                 //Auth is not determined
                 //We should request access to the calendar
@@ -125,8 +127,8 @@ public class Add2CalendarPlugin: NSObject, FlutterPlugin {
                     if granted {
                         OperationQueue.main.addOperation {
                             self?.presentEventCalendarDetailModal(event: event, eventStore: eventStore)
+                            completion?(event.eventIdentifier)
                         }
-                        completion?(event.eventIdentifier)
                     } else {
                         // Auth denied
                         completion?("")

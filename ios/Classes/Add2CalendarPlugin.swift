@@ -30,10 +30,16 @@ public class Add2CalendarPlugin: NSObject, FlutterPlugin {
                   result(false)
               }
           })
+      } else if call.method == "deleteCalendarEvent" {
+          guard let eventId = call.arguments as? String else {
+              result(FlutterError(code: "INVALID_ARGUMENT", message: "Event ID is required", details: nil))
+              return
+          }
+          deleteCalendarEvent(eventId: eventId, result: result)
       }
     }
 
-    private func addEventToCalendar(from args: [String:Any], completion: ((_ success: Bool) -> Void)? = nil) {
+    private func addEventToCalendar(from args: [String:Any], completion: ((_ eventID: String) -> Void)? = nil) {
         
         
         let title = args["title"] as! String
@@ -48,7 +54,7 @@ public class Add2CalendarPlugin: NSObject, FlutterPlugin {
         
         let eventStore = EKEventStore()
         let event = createEvent(eventStore: eventStore, alarmInterval: alarmInterval, title: title, description: description, location: location, timeZone: timeZone, startDate: startDate, endDate: endDate, allDay: allDay, url: url, args: args)
-
+        
         presentCalendarModalToAddEvent(event, eventStore: eventStore, completion: completion)
     }
     
@@ -97,12 +103,12 @@ public class Add2CalendarPlugin: NSObject, FlutterPlugin {
     
     // Show event kit ui to add event to calendar
     
-    func presentCalendarModalToAddEvent(_ event: EKEvent, eventStore: EKEventStore, completion: ((_ success: Bool) -> Void)? = nil) {
+    func presentCalendarModalToAddEvent(_ event: EKEvent, eventStore: EKEventStore, completion: ((_ eventID: String) -> Void)? = nil) {
         if #available(iOS 17, *) {
             OperationQueue.main.addOperation {
                 self.presentEventCalendarDetailModal(event: event, eventStore: eventStore)
             }
-            completion?(true)
+            completion?(event.eventIdentifier)
         } else {
             let authStatus = getAuthorizationStatus()
             switch authStatus {
@@ -110,7 +116,7 @@ public class Add2CalendarPlugin: NSObject, FlutterPlugin {
                 OperationQueue.main.addOperation {
                     self.presentEventCalendarDetailModal(event: event, eventStore: eventStore)
                 }
-                completion?(true)
+                completion?(event.eventIdentifier)
             case .notDetermined:
                 //Auth is not determined
                 //We should request access to the calendar
@@ -119,17 +125,17 @@ public class Add2CalendarPlugin: NSObject, FlutterPlugin {
                         OperationQueue.main.addOperation {
                             self?.presentEventCalendarDetailModal(event: event, eventStore: eventStore)
                         }
-                        completion?(true)
+                        completion?(event.eventIdentifier)
                     } else {
                         // Auth denied
-                        completion?(false)
+                        completion?("")
                     }
                 })
             case .denied, .restricted:
                 // Auth denied or restricted
-                completion?(false)
+                completion?("")
             default:
-                completion?(false)
+                completion?("")
             }
         }
     }
@@ -153,6 +159,21 @@ public class Add2CalendarPlugin: NSObject, FlutterPlugin {
             })
         }
     }
+    
+    private func deleteCalendarEvent(eventId: String, result: @escaping FlutterResult) {
+            eventStore.requestAccess(to: .event) { (granted, error) in
+                if granted, let event = self.eventStore.event(withIdentifier: eventId) {
+                    do {
+                        try self.eventStore.remove(event, span: .thisEvent)
+                        result(true)
+                    } catch {
+                        result(false)
+                    }
+                } else {
+                    result(false)
+                }
+            }
+        }
 }
 
 extension Add2CalendarPlugin: EKEventEditViewDelegate {

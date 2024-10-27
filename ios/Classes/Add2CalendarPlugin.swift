@@ -162,19 +162,21 @@ public class Add2CalendarPlugin: NSObject, FlutterPlugin {
     }
     
     private func deleteCalendarEvent(eventId: String, result: @escaping FlutterResult) {
-            eventStore.requestAccess(to: .event) { (granted, error) in
-                if granted, let event = self.eventStore.event(withIdentifier: eventId) {
-                    do {
-                        try self.eventStore.remove(event, span: .thisEvent)
-                        result(true)
-                    } catch {
-                        result(false)
-                    }
-                } else {
+
+        let eStore = EKEventStore()    
+        eStore.requestAccess(to: .event) { (granted, error) in
+            if granted, let event = eStore.event(withIdentifier: eventId) {
+                do {
+                    try eStore.remove(event, span: .thisEvent)
+                    result(true)
+                } catch {
                     result(false)
                 }
+            } else {
+                result(false)
             }
         }
+    }
 }
 
 extension Add2CalendarPlugin: EKEventEditViewDelegate {

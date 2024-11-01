@@ -109,27 +109,33 @@ public class Add2CalendarPlugin: NSObject, FlutterPlugin {
     // Show event kit ui to add event to calendar
     
     func presentCalendarModalToAddEvent(_ event: EKEvent, eventStore: EKEventStore, completion: ((_ eventID: String) -> Void)? = nil) {
-        if #available(iOS 17, *) {
-            OperationQueue.main.addOperation {
-                self.presentEventCalendarDetailModal(event: event, eventStore: eventStore, dismissHandle:{ success in
-                    
-                    if success, let eventIdentifier = event.eventIdentifier {
-                        completion?(eventIdentifier)
-                    } else {
-                        completion?("")
-                    }
-                  }
-              )
-            }
+//        if #available(iOS 17, *) {
+//            OperationQueue.main.addOperation {
+//                self.presentEventCalendarDetailModal(event: event, eventStore: eventStore, dismissHandle:{ success in
+//                    
+//                    if success, let eventIdentifier = event.eventIdentifier {
+//                        completion?(eventIdentifier)
+//                    } else {
+//                        completion?("")
+//                    }
+//                  }
+//              )
+//            }
             // completion?(event.eventIdentifier)
-        } else {
+//        } else {
             let authStatus = getAuthorizationStatus()
             switch authStatus {
             case .authorized:
                 OperationQueue.main.addOperation {
-                    self.presentEventCalendarDetailModal(event: event, eventStore: eventStore)
-                    completion?(event.eventIdentifier)
-
+                    self.presentEventCalendarDetailModal(event: event, eventStore: eventStore, dismissHandle:{ success in
+                        
+                        if success, let eventIdentifier = event.eventIdentifier {
+                            completion?(eventIdentifier)
+                        } else {
+                            completion?("")
+                        }
+                      }
+                  )
                 }
             case .notDetermined:
                 //Auth is not determined
@@ -137,8 +143,15 @@ public class Add2CalendarPlugin: NSObject, FlutterPlugin {
                 eventStore.requestAccess(to: .event, completion: { [weak self] (granted, error) in
                     if granted {
                         OperationQueue.main.addOperation {
-                            self?.presentEventCalendarDetailModal(event: event, eventStore: eventStore)
-                            completion?(event.eventIdentifier)
+                            self.presentEventCalendarDetailModal(event: event, eventStore: eventStore, dismissHandle:{ success in
+                                
+                                if success, let eventIdentifier = event.eventIdentifier {
+                                    completion?(eventIdentifier)
+                                } else {
+                                    completion?("")
+                                }
+                              }
+                          )
                         }
                     } else {
                         // Auth denied
@@ -151,7 +164,7 @@ public class Add2CalendarPlugin: NSObject, FlutterPlugin {
             default:
                 completion?("")
             }
-        }
+//        }
     }
     
     // Present edit event calendar modal
@@ -211,7 +224,6 @@ extension Add2CalendarPlugin: EKEventEditViewDelegate {
         
         switch action {
         case .saved:
-            print("Event Identifier: \(eventIdentifier)")
             dismissHandle?(true)
         default:
             dismissHandle?(false)

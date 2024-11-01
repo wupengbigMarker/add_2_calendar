@@ -211,6 +211,7 @@ extension Add2CalendarPlugin: EKEventEditViewDelegate {
         
         switch action {
         case .saved:
+            print("Event Identifier: \(eventIdentifier)")
             dismissHandle?(true)
         default:
             dismissHandle?(false)

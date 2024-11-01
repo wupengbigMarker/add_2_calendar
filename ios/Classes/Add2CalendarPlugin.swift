@@ -12,13 +12,17 @@ extension Date {
 
 var statusBarStyle = UIApplication.shared.statusBarStyle
 public class Add2CalendarPlugin: NSObject, FlutterPlugin {
+
+      // 添加一个 dismissHandle 属性
+    private var dismissHandle: ((_ success: Bool) -> Void)?
+
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "add_2_calendar", binaryMessenger: registrar.messenger())
     let instance = Add2CalendarPlugin()
     registrar.addMethodCallDelegate(instance, channel: channel)
   }
 
- public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+    public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
       if call.method == "add2Cal" {
         let args = call.arguments as! [String:Any]
        
@@ -107,12 +111,12 @@ public class Add2CalendarPlugin: NSObject, FlutterPlugin {
     func presentCalendarModalToAddEvent(_ event: EKEvent, eventStore: EKEventStore, completion: ((_ eventID: String) -> Void)? = nil) {
         if #available(iOS 17, *) {
             OperationQueue.main.addOperation {
-                self.presentEventCalendarDetailModal(event: event, eventStore: eventStore, dismissHandle:{ (val) -> Void in
+                self.presentEventCalendarDetailModal(event: event, eventStore: eventStore, dismissHandle:{ success in
                     
-                    if(event.eventIdentifier == nil){
+                    if success, let eventIdentifier = event.eventIdentifier {
+                        completion?(eventIdentifier)
+                    } else {
                         completion?("")
-                    }else{
-                        completion?(event.eventIdentifier)
                     }
                   }
               )
@@ -157,6 +161,10 @@ public class Add2CalendarPlugin: NSObject, FlutterPlugin {
         eventModalVC.event = event
         eventModalVC.eventStore = eventStore
         eventModalVC.editViewDelegate = self
+
+        // 存储 dismissHandle 闭包到属性中
+        self.dismissHandle = dismissHandle
+
         
         if #available(iOS 13, *) {
             eventModalVC.modalPresentationStyle = .fullScreen
@@ -164,7 +172,6 @@ public class Add2CalendarPlugin: NSObject, FlutterPlugin {
         
         if let root = UIApplication.shared.keyWindow?.rootViewController {
             root.present(eventModalVC, animated: true, completion: {
-                dismissHandle?(true)
                 statusBarStyle = UIApplication.shared.statusBarStyle
                 UIApplication.shared.statusBarStyle = UIStatusBarStyle.default
             })
@@ -192,8 +199,21 @@ public class Add2CalendarPlugin: NSObject, FlutterPlugin {
 extension Add2CalendarPlugin: EKEventEditViewDelegate {
     
     public func eventEditViewController(_ controller: EKEventEditViewController, didCompleteWith action: EKEventEditViewAction) {
-        controller.dismiss(animated: true, completion: {
-            UIApplication.shared.statusBarStyle = statusBarStyle
-        })
+        // controller.dismiss(animated: true, completion: {
+        //     UIApplication.shared.statusBarStyle = statusBarStyle
+        // })
+
+        defer {
+            controller.dismiss(animated: true, completion: {
+                UIApplication.shared.statusBarStyle = statusBarStyle
+            })
+        }
+        
+        switch action {
+        case .saved:
+            dismissHandle?(true)
+        default:
+            dismissHandle?(false)
+        }
     }
 }

@@ -42,7 +42,7 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>NSCalendarsUsageDescription</key>
-	<string>Create events</string>
+	<string>We need add meeting time to your local calendar</string>
 	<key>NSContactsUsageDescription</key>
 	<string>Add people to event</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>

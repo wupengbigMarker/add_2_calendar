@@ -36,7 +36,7 @@ class Add2CalendarPlugin: FlutterPlugin, MethodCallHandler, ActivityAware {
  
   override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
       if (call.method == "add2Cal") {
-          val success = insert(
+          val eventId = insert(
               call.argument("title")!!,
               call.argument("desc") as String?,
               call.argument("location") as String?,
@@ -47,8 +47,12 @@ class Add2CalendarPlugin: FlutterPlugin, MethodCallHandler, ActivityAware {
               call.argument("recurrence") as HashMap<String, Any>?,
               call.argument("invites") as String?
           )
-          result.success(success)
+          result.success(eventId)
 
+      } else if (call.method == "deleteCalendarEvent"){
+            val eventId = call.argument<Long>("eventId")!!
+            val success = deleteEvent(eventId)
+            result.success(success)
       } else {
           result.notImplemented()
       }

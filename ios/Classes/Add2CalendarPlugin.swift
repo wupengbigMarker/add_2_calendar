@@ -36,7 +36,8 @@ public class Add2CalendarPlugin: NSObject, FlutterPlugin {
             result(eventId)
           })
       } else if call.method == "deleteCalendarEvent" {
-          guard let eventId = call.arguments as? String else {
+          let args = call.arguments as! [String:Any]
+          guard let eventId = args["eventId"] as? String else {
               result(FlutterError(code: "INVALID_ARGUMENT", message: "Event ID is required", details: nil))
               return
           }

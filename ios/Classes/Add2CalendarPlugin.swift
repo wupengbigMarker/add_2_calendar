@@ -141,22 +141,22 @@ public class Add2CalendarPlugin: NSObject, FlutterPlugin {
                 //Auth is not determined
                 //We should request access to the calendar
                 eventStore.requestAccess(to: .event, completion: { [weak self] (granted, error) in
-                    if granted {
-                        OperationQueue.main.addOperation {
-                            self.presentEventCalendarDetailModal(event: event, eventStore: eventStore, dismissHandle:{ success in
-                                
-                                if success, let eventIdentifier = event.eventIdentifier {
-                                    completion?(eventIdentifier)
-                                } else {
-                                    completion?("")
-                                }
-                              }
-                          )
-                        }
-                    } else {
-                        // Auth denied
-                        completion?("")
-                    }
+//                    if granted {
+//                        OperationQueue.main.addOperation {
+//                            self.presentEventCalendarDetailModal(event: event, eventStore: eventStore, dismissHandle:{ success in
+//                                
+//                                if success, let eventIdentifier = event.eventIdentifier {
+//                                    completion?(eventIdentifier)
+//                                } else {
+//                                    completion?("")
+//                                }
+//                              }
+//                          )
+//                        }
+//                    } else {
+//                        // Auth denied
+//                        completion?("")
+//                    }
                 })
             case .denied, .restricted:
                 // Auth denied or restricted

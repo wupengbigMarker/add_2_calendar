@@ -1,3 +1,11 @@
+/*
+ * @Description: 
+ * @Author: wp
+ * @Date: 2024-04-17 12:25:04
+ * @LastEditors: Wp
+ * @LastEditTime: 2024-11-05 09:12:52
+ * @FilePath: /example/lib/main.dart
+ */
 import 'package:flutter/material.dart';
 
 import 'package:add_2_calendar/add_2_calendar.dart';
@@ -10,13 +18,19 @@ class MyApp extends StatelessWidget {
 
   MyApp({super.key});
 
+  String eventID = "";
+
+  final startDate = DateTime.fromMillisecondsSinceEpoch(
+                1730772000000);
+            final endDate = DateTime.fromMillisecondsSinceEpoch(
+                1730775600000);
   Event buildEvent({Recurrence? recurrence}) {
     return Event(
       title: 'Test event',
       description: 'example',
       location: 'Flutter app',
-      startDate: DateTime.now(),
-      endDate: DateTime.now().add(const Duration(minutes: 30)),
+      startDate: startDate,
+      endDate: endDate,
       allDay: false,
       iosParams: const IOSParams(
         reminder: Duration(minutes: 40),
@@ -46,54 +60,22 @@ class MyApp extends StatelessWidget {
               onTap: () {
                 Add2Calendar.addEvent2Cal(
                   buildEvent(),
-                );
+                ).then((val){
+                  eventID = val;
+                  debugPrint("eventId is:----$eventID");
+                });
               },
             ),
             const Divider(),
             ListTile(
-              title: const Text('Add event with recurrence 1'),
-              subtitle: const Text("weekly for 3 months"),
+              title: const Text('Delete event'),
+              subtitle: const Text("watch out"),
               trailing: const Icon(Icons.calendar_today),
               onTap: () {
-                Add2Calendar.addEvent2Cal(buildEvent(
-                  recurrence: Recurrence(
-                    frequency: Frequency.weekly,
-                    endDate: DateTime.now().add(const Duration(days: 60)),
-                  ),
-                ));
+                Add2Calendar.deleteEvent(eventID);
               },
             ),
-            const Divider(),
-            ListTile(
-              title: const Text('Add event with recurrence 2'),
-              subtitle: const Text("every 2 months for 6 times (1 year)"),
-              trailing: const Icon(Icons.calendar_today),
-              onTap: () {
-                Add2Calendar.addEvent2Cal(buildEvent(
-                  recurrence: Recurrence(
-                    frequency: Frequency.monthly,
-                    interval: 2,
-                    ocurrences: 6,
-                  ),
-                ));
-              },
-            ),
-            const Divider(),
-            ListTile(
-              title: const Text('Add event with recurrence 3'),
-              subtitle:
-                  const Text("RRULE (android only) every year for 10 years"),
-              trailing: const Icon(Icons.calendar_today),
-              onTap: () {
-                Add2Calendar.addEvent2Cal(buildEvent(
-                  recurrence: Recurrence(
-                    frequency: Frequency.yearly,
-                    rRule: 'FREQ=YEARLY;COUNT=10;WKST=SU',
-                  ),
-                ));
-              },
-            ),
-            const Divider(),
+           
           ],
         ),
       ),

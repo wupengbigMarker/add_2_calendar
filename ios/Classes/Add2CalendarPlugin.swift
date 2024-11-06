@@ -37,6 +37,8 @@ public class Add2CalendarPlugin: NSObject, FlutterPlugin {
           })
       } else if call.method == "deleteCalendarEvent" {
           let args = call.arguments as! [String:Any]
+          print("args is:\(args)");
+          
           guard let eventId = args["eventId"] as? String else {
               result(FlutterError(code: "INVALID_ARGUMENT", message: "Event ID is required", details: nil))
               return
@@ -142,22 +144,30 @@ public class Add2CalendarPlugin: NSObject, FlutterPlugin {
                 //Auth is not determined
                 //We should request access to the calendar
                 eventStore.requestAccess(to: .event, completion: { [weak self] (granted, error) in
-//                    if granted {
-//                        OperationQueue.main.addOperation {
-//                            self.presentEventCalendarDetailModal(event: event, eventStore: eventStore, dismissHandle:{ success in
-//                                
-//                                if success, let eventIdentifier = event.eventIdentifier {
-//                                    completion?(eventIdentifier)
-//                                } else {
-//                                    completion?("")
-//                                }
-//                              }
-//                          )
-//                        }
-//                    } else {
-//                        // Auth denied
-//                        completion?("")
-//                    }
+
+                    guard let self = self else {
+                        completion?("")
+                        return
+                    }
+                    
+                   if granted {
+                       OperationQueue.main.addOperation {
+                        print("----1234)");
+                        // print("----status:\(self.getAuthorizationStatus())");
+                           self.presentEventCalendarDetailModal(event: event, eventStore: eventStore, dismissHandle:{ success in
+                               
+                               if success, let eventIdentifier = event.eventIdentifier {
+                                   completion?(eventIdentifier)
+                               } else {
+                                   completion?("")
+                               }
+                             }
+                         )
+                       }
+                   } else {
+                       // Auth denied
+                       completion?("")
+                   }
                 })
             case .denied, .restricted:
                 // Auth denied or restricted
